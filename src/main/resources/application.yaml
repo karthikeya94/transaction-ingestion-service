@@ -1,0 +1,99 @@
+spring:
+  application:
+    name: transaction-ingestion-service
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/yourdatabase
+      database: sample_mflix
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      batch-size: 65536
+      linger-ms: 10
+      buffer-memory: 33554432
+    consumer:
+      group-id: transaction-ingestion-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+    template:
+      default-topic: transaction-received
+
+validation:
+  devices: mobile, desktop, tablet, kiosk
+  channels: online, atm, branch, mobile
+  currency:
+    iso-codes: USD, EUR, GBP, JPY, INR, AUD, CAD, CHF, CNY, HKD
+    strict-iso-validation: true
+  amount:
+    minimum-amount: 0.01
+    maximum-amount: 999999999.99
+    tier-limits:
+      PREMIUM: 50000.00
+      STANDARD: 10000.00
+      BASIC: 5000.00
+  timestamp:
+    time-window-minutes: 5
+    allow-future-dates: false
+  customer:
+    id-pattern: ^C[0-9]{6,}$
+    valid-statuses: ACTIVE
+  rules:
+    enable-duplicate-check: true
+    duplicate-window-seconds: 60
+    enable-velocity-check: true
+    max-transactions-per-hour: 50
+    enable-kyc-check: true
+    kyc-expiry-days: 365
+    enable-sanctions-check: true
+
+kafka:
+  topics:
+    transaction-received: transaction-received
+    transaction-validated: transaction-validated
+    transaction-rejected: transaction-rejected
+    transaction-validation-failed: transaction-validation-failed
+  partition-count: 10
+  replication-factor: 3
+  retention-days: 7
+
+logging:
+  level:
+    com.transaction.ingestion.service: DEBUG
+    org.springframework.kafka: INFO
+    org.springframework.data.mongodb: INFO
+    org.springframework.retry: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/transaction-ingestion-service.log
+    max-size: 10MB
+    max-history: 30
+
+server:
+  port: ${PORT:0}
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${spring.application.instace_id:${random.value}}
+    prefer-ip-address: true
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  packages-to-scan: com.transaction.ingestion.service
