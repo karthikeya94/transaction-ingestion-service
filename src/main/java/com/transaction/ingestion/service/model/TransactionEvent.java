@@ -1,5 +1,6 @@
 package com.transaction.ingestion.service.model;
 
+import com.riskplatform.common.model.Location;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,9 +19,11 @@ public class TransactionEvent {
     private Double amount;
     private String currency;
     private String merchant;
+    private String merchantCategory;
     private Instant timestamp;
     private String channel;
     private String device;
+    private Location location;
     private String eventType;
     private Instant eventTimestamp;
     private String correlationId;

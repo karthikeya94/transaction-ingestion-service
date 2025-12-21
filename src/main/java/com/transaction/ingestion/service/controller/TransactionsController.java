@@ -1,6 +1,6 @@
 package com.transaction.ingestion.service.controller;
 
-import com.transaction.ingestion.service.model.*;
+import com.riskplatform.common.entity.Transaction;
 import com.transaction.ingestion.service.dto.*;
 import com.transaction.ingestion.service.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;

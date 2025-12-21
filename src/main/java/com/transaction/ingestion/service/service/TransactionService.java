@@ -1,7 +1,11 @@
 package com.transaction.ingestion.service.service;
 
 import com.transaction.ingestion.service.config.ValidationProperties;
-import com.transaction.ingestion.service.model.*;
+import com.riskplatform.common.entity.Customer;
+import com.riskplatform.common.entity.RejectedTransaction;
+import com.riskplatform.common.entity.Transaction;
+import com.riskplatform.common.model.Location;
+import com.transaction.ingestion.service.model.TransactionEvent;
 import com.transaction.ingestion.service.dto.*;
 import com.transaction.ingestion.service.repository.CustomerRepository;
 import com.transaction.ingestion.service.repository.RejectedTransactionRepository;

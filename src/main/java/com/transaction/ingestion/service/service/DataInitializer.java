@@ -1,9 +1,9 @@
 package com.transaction.ingestion.service.service;
 
-import com.transaction.ingestion.service.model.Customer;
-import com.transaction.ingestion.service.model.Location;
+import com.riskplatform.common.entity.Customer;
+import com.riskplatform.common.entity.Transaction;
+import com.riskplatform.common.model.Location;
 import com.transaction.ingestion.service.config.DataInitializationConfig;
-import com.transaction.ingestion.service.model.Transaction;
 import com.transaction.ingestion.service.repository.CustomerRepository;
 import com.transaction.ingestion.service.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,27 +17,27 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Component
+//@Component
 @RequiredArgsConstructor
 @Slf4j
 public class DataInitializer {
 
     private final CustomerRepository customerRepository;
     private final TransactionRepository transactionRepository;
-    private final DataInitializationConfig config;
+    // private final DataInitializationConfig config;
 
-//    @Override
+    // @Override
     public void run() throws Exception {
         if (false) {
             log.info("Data initialization is disabled. Skipping dummy data creation.");
             return;
         }
-        
+
         log.info("Initializing dummy data...");
 
         // Clear existing data
-//        customerRepository.deleteAll();
-//        transactionRepository.deleteAll();
+        // customerRepository.deleteAll();
+        // transactionRepository.deleteAll();
 
         // Create dummy customers
         List<Customer> customers = createDummyCustomers();
@@ -53,7 +53,7 @@ public class DataInitializer {
     }
 
     private Customer createCustomer(String customerId, String name, String email, String status, String tier,
-                                  Double dailyLimit, Double transactionLimit, Boolean blacklisted) {
+            Double dailyLimit, Double transactionLimit, Boolean blacklisted) {
         Customer customer = new Customer();
         customer.setCustomerId(customerId);
         customer.setName(name);
@@ -69,8 +69,8 @@ public class DataInitializer {
     }
 
     private Transaction createTransactionObject(String transactionId, String customerId, Double amount, String currency,
-                                              String merchant, String merchantCategory, Instant timestamp, String channel,
-                                              String device, Location location, String status, Instant createdAt, Instant updatedAt) {
+            String merchant, String merchantCategory, Instant timestamp, String channel,
+            String device, Location location, String status, Instant createdAt, Instant updatedAt) {
         Transaction transaction = new Transaction();
         transaction.setTransactionId(transactionId);
         transaction.setCustomerId(customerId);
@@ -90,37 +90,48 @@ public class DataInitializer {
 
     private List<Customer> createDummyCustomers() {
         return Arrays.asList(
-                createCustomer("C100001", "John Smith", "john.smith@example.com", "ACTIVE", "PREMIUM", 50000.00, 10000.00, false),
-                createCustomer("C100002", "Jane Doe", "jane.doe@example.com", "ACTIVE", "STANDARD", 10000.00, 5000.00, false),
-                createCustomer("C100003", "Robert Johnson", "robert.johnson@example.com", "ACTIVE", "BASIC", 5000.00, 1000.00, false),
-                createCustomer("C100004", "Emily Williams", "emily.williams@example.com", "INACTIVE", "STANDARD", 10000.00, 2000.00, false),
-                createCustomer("C100005", "Michael Brown", "michael.brown@example.com", "ACTIVE", "PREMIUM", 50000.00, 15000.00, true)
-        );
+                createCustomer("C100001", "John Smith", "john.smith@example.com", "ACTIVE", "PREMIUM", 50000.00,
+                        10000.00, false),
+                createCustomer("C100002", "Jane Doe", "jane.doe@example.com", "ACTIVE", "STANDARD", 10000.00, 5000.00,
+                        false),
+                createCustomer("C100003", "Robert Johnson", "robert.johnson@example.com", "ACTIVE", "BASIC", 5000.00,
+                        1000.00, false),
+                createCustomer("C100004", "Emily Williams", "emily.williams@example.com", "INACTIVE", "STANDARD",
+                        10000.00, 2000.00, false),
+                createCustomer("C100005", "Michael Brown", "michael.brown@example.com", "ACTIVE", "PREMIUM", 50000.00,
+                        15000.00, true));
     }
 
     private List<Transaction> createDummyTransactions(List<Customer> customers) {
         Random random = new Random();
-        String[] merchants = {"Amazon", "Walmart", "Target", "Best Buy", "Starbucks", "McDonald's", "Subway", "Shell", "Exxon", "Costco"};
-        String[] merchantCategories = {"E-commerce", "Retail", "Food & Beverage", "Gas Station", "Wholesale"};
-        String[] channels = {"online", "atm", "branch", "mobile"};
-        String[] devices = {"desktop", "mobile", "tablet", "kiosk"};
-        String[] currencies = {"USD", "EUR", "GBP", "JPY", "INR"};
-        String[] countries = {"USA", "UK", "Germany", "Japan", "India"};
-        String[] cities = {"New York", "London", "Berlin", "Tokyo", "Mumbai"};
+        String[] merchants = { "Amazon", "Walmart", "Target", "Best Buy", "Starbucks", "McDonald's", "Subway", "Shell",
+                "Exxon", "Costco" };
+        String[] merchantCategories = { "E-commerce", "Retail", "Food & Beverage", "Gas Station", "Wholesale" };
+        String[] channels = { "online", "atm", "branch", "mobile" };
+        String[] devices = { "desktop", "mobile", "tablet", "kiosk" };
+        String[] currencies = { "USD", "EUR", "GBP", "JPY", "INR" };
+        String[] countries = { "USA", "UK", "Germany", "Japan", "India" };
+        String[] cities = { "New York", "London", "Berlin", "Tokyo", "Mumbai" };
 
         return Arrays.asList(
-                createTransaction(customers.get(0), merchants[0], merchantCategories[0], channels[0], devices[1], currencies[0], countries[0], cities[0], random),
-                createTransaction(customers.get(0), merchants[1], merchantCategories[1], channels[3], devices[1], currencies[0], countries[0], cities[0], random),
-                createTransaction(customers.get(1), merchants[4], merchantCategories[2], channels[2], devices[0], currencies[0], countries[0], cities[1], random),
-                createTransaction(customers.get(1), merchants[5], merchantCategories[2], channels[1], devices[2], currencies[0], countries[0], cities[1], random),
-                createTransaction(customers.get(2), merchants[8], merchantCategories[3], channels[0], devices[1], currencies[0], countries[0], cities[2], random),
-                createTransaction(customers.get(3), merchants[2], merchantCategories[1], channels[3], devices[3], currencies[0], countries[0], cities[3], random),
-                createTransaction(customers.get(4), merchants[9], merchantCategories[4], channels[0], devices[0], currencies[0], countries[0], cities[4], random)
-        );
+                createTransaction(customers.get(0), merchants[0], merchantCategories[0], channels[0], devices[1],
+                        currencies[0], countries[0], cities[0], random),
+                createTransaction(customers.get(0), merchants[1], merchantCategories[1], channels[3], devices[1],
+                        currencies[0], countries[0], cities[0], random),
+                createTransaction(customers.get(1), merchants[4], merchantCategories[2], channels[2], devices[0],
+                        currencies[0], countries[0], cities[1], random),
+                createTransaction(customers.get(1), merchants[5], merchantCategories[2], channels[1], devices[2],
+                        currencies[0], countries[0], cities[1], random),
+                createTransaction(customers.get(2), merchants[8], merchantCategories[3], channels[0], devices[1],
+                        currencies[0], countries[0], cities[2], random),
+                createTransaction(customers.get(3), merchants[2], merchantCategories[1], channels[3], devices[3],
+                        currencies[0], countries[0], cities[3], random),
+                createTransaction(customers.get(4), merchants[9], merchantCategories[4], channels[0], devices[0],
+                        currencies[0], countries[0], cities[4], random));
     }
 
-    private Transaction createTransaction(Customer customer, String merchant, String merchantCategory, String channel, 
-                                       String device, String currency, String country, String city, Random random) {
+    private Transaction createTransaction(Customer customer, String merchant, String merchantCategory, String channel,
+            String device, String currency, String country, String city, Random random) {
         // Generate random amount based on customer tier and limits
         double maxAmount = customer.getTransactionLimit() != null ? customer.getTransactionLimit() : 1000.00;
         double amount = ThreadLocalRandom.current().nextDouble(10.00, Math.min(maxAmount, 5000.00));

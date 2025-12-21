@@ -1,6 +1,6 @@
 package com.transaction.ingestion.service.service;
 
-import com.transaction.ingestion.service.model.Transaction;
+import com.riskplatform.common.entity.Transaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -17,14 +17,14 @@ public class AMLSanctionsService {
             }
 
             if (transaction.getLocation() != null &&
-                isCountrySanctioned(transaction.getLocation().getCountry())) {
+                    isCountrySanctioned(transaction.getLocation().getCountry())) {
                 return false;
             }
 
             return checkExternalAMLService(transaction);
         } catch (Exception e) {
             log.error("Error checking AML compliance for transaction {}: {}",
-                transaction.getTransactionId(), e.getMessage(), e);
+                    transaction.getTransactionId(), e.getMessage(), e);
             return true;
         }
     }
@@ -40,15 +40,16 @@ public class AMLSanctionsService {
     private boolean checkExternalAMLService(Transaction transaction) {
         try {
             // Simulate calling an external AML service
-            // In a real implementation, this would make an HTTP call or gRPC call to an external service
+            // In a real implementation, this would make an HTTP call or gRPC call to an
+            // external service
             Thread.sleep(50); // Simulate network delay
-            
+
             // More realistic mock implementation based on transaction data
             if (transaction.getAmount() != null && transaction.getAmount() > 50000) {
                 // High-value transactions have a higher chance of being flagged
                 return Math.random() > 0.3;
             }
-            
+
             // Regular transactions mostly pass
             return Math.random() > 0.05;
         } catch (InterruptedException e) {
@@ -57,7 +58,7 @@ public class AMLSanctionsService {
             return true; // Default to compliant if interrupted
         } catch (Exception e) {
             log.error("Error calling external AML service for transaction {}: {}",
-                transaction.getTransactionId(), e.getMessage(), e);
+                    transaction.getTransactionId(), e.getMessage(), e);
             // In case of service error, we might want to be more conservative
             // but for this implementation we'll default to compliant
             return true;

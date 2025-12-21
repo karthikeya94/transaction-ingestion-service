@@ -1,8 +1,8 @@
 package com.transaction.ingestion.service.service;
 
-import com.transaction.ingestion.service.model.Transaction;
+import com.riskplatform.common.entity.Transaction;
+import com.riskplatform.common.entity.ValidationDetails;
 import com.transaction.ingestion.service.model.TransactionEvent;
-import com.transaction.ingestion.service.model.ValidationDetails;
 import com.transaction.ingestion.service.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,19 +23,20 @@ public class AsyncValidationProcessor {
     public void processTransactionReceivedEvent(TransactionEvent event) {
         try {
             log.info("Processing transaction received event for transaction ID: {}", event.getTransactionId());
-            
+
             Transaction transaction = buildTransactionFromEvent(event);
-            
+
             ValidationDetails validationDetails = advancedValidationService.performAdvancedValidation(transaction);
             log.debug("Validation completed for transaction ID: {}. Risk flags: {}. validation: {}",
-                event.getTransactionId(), transaction.getRiskFlags(), validationDetails);
-            
+                    event.getTransactionId(), transaction.getRiskFlags(), validationDetails);
+
             transaction.setUpdatedAt(Instant.now());
             transactionRepository.save(transaction);
-            
+
             log.info("Completed async validation for transaction ID: {}", event.getTransactionId());
         } catch (Exception e) {
-            log.error("Error processing transaction received event for transaction ID: {}", event.getTransactionId(), e);
+            log.error("Error processing transaction received event for transaction ID: {}", event.getTransactionId(),
+                    e);
         }
     }
 

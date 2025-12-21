@@ -1,6 +1,6 @@
 package com.transaction.ingestion.service.dto;
 
-import com.transaction.ingestion.service.model.Location;
+import com.riskplatform.common.model.Location;
 import lombok.Data;
 
 import java.time.Instant;
