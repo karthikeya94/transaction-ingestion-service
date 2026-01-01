@@ -4,8 +4,9 @@ import com.transaction.ingestion.service.config.ValidationProperties;
 import com.riskplatform.common.entity.Customer;
 import com.riskplatform.common.entity.RejectedTransaction;
 import com.riskplatform.common.entity.Transaction;
-import com.riskplatform.common.model.Location;
-import com.transaction.ingestion.service.model.TransactionEvent;
+
+import com.riskplatform.common.event.TransactionEvent;
+import com.riskplatform.common.event.RejectionDetails;
 import com.transaction.ingestion.service.dto.*;
 import com.transaction.ingestion.service.repository.CustomerRepository;
 import com.transaction.ingestion.service.repository.RejectedTransactionRepository;
@@ -200,13 +201,17 @@ public class TransactionService {
         return Transaction.builder()
                 .transactionId(transactionId)
                 .customerId(ingestRequest.getCustomerId())
-                .amount(ingestRequest.getAmount())
+                .amount(java.math.BigDecimal.valueOf(ingestRequest.getAmount()))
                 .currency(ingestRequest.getCurrency())
                 .merchant(ingestRequest.getMerchant())
                 .merchantCategory(ingestRequest.getMerchantCategory())
                 .timestamp(ingestRequest.getTimestamp())
                 .channel(ingestRequest.getChannel())
-                .device(ingestRequest.getDevice())
+                .device(com.riskplatform.common.model.DeviceInfo.builder()
+                        .type(ingestRequest.getDevice())
+                        .deviceId(UUID.randomUUID().toString())
+                        .isNewDevice(true)
+                        .build())
                 .location(ingestRequest.getLocation())
                 .status("RECEIVED")
                 .createdAt(Instant.now())
@@ -219,13 +224,13 @@ public class TransactionService {
                 .eventId(transaction.getId())
                 .transactionId(transaction.getTransactionId())
                 .customerId(transaction.getCustomerId())
-                .amount(transaction.getAmount())
+                .amount(transaction.getAmount() != null ? transaction.getAmount().doubleValue() : 0.0)
                 .currency(transaction.getCurrency())
                 .merchant(transaction.getMerchant())
                 .timestamp(transaction.getTimestamp())
                 .channel(transaction.getChannel())
-                .device(transaction.getDevice())
-                .eventType("TransactionReceived")
+                .device(transaction.getDevice() != null ? transaction.getDevice().getType() : null)
+                .eventTypeString("TransactionReceived")
                 .eventTimestamp(Instant.now())
                 .correlationId("corr-" + transaction.getTransactionId())
                 .build();
@@ -236,9 +241,9 @@ public class TransactionService {
         if (request == null)
             return;
 
-        TransactionEvent.RejectionDetails rejectionDetails = null;
+        RejectionDetails rejectionDetails = null;
         if (request.getAmount() != null && customerLimit != null) {
-            rejectionDetails = TransactionEvent.RejectionDetails.builder()
+            rejectionDetails = RejectionDetails.builder()
                     .requestedAmount(request.getAmount())
                     .customerLimit(customerLimit)
                     .build();
@@ -256,7 +261,7 @@ public class TransactionService {
                 .timestamp(request.getTimestamp())
                 .channel(request.getChannel())
                 .device(request.getDevice())
-                .eventType("TransactionRejected")
+                .eventTypeString("TransactionRejected")
                 .eventTimestamp(Instant.now())
                 .correlationId("corr-" + transactionId)
                 .rejectionReason(reason)

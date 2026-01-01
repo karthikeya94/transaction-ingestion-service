@@ -1,6 +1,6 @@
 package com.transaction.ingestion.service.config;
 
-import com.transaction.ingestion.service.model.TransactionEvent;
+import com.riskplatform.common.event.TransactionEvent;
 import com.transaction.ingestion.service.dto.*;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
@@ -32,7 +32,7 @@ public class KafkaConfig {
 
     @Value("${kafka.topics.transaction-rejected}")
     private String transactionRejectedTopic;
-    
+
     @Value("${kafka.topics.transaction-validation-failed:transaction-validation-failed}")
     private String transactionValidationFailedTopic;
 
@@ -50,7 +50,8 @@ public class KafkaConfig {
     public ProducerFactory<String, TransactionEvent> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
+                org.apache.kafka.common.serialization.StringSerializer.class);
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         configProps.put(ProducerConfig.ACKS_CONFIG, "all");
         configProps.put(ProducerConfig.RETRIES_CONFIG, 3);
@@ -71,10 +72,13 @@ public class KafkaConfig {
         Map<String, Object> props = new HashMap<>();
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "transaction-ingestion-group");
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                org.apache.kafka.common.serialization.StringDeserializer.class);
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                org.springframework.kafka.support.serializer.JsonDeserializer.class);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES, "com.transaction.ingestion.service.model");
+        props.put(org.springframework.kafka.support.serializer.JsonDeserializer.TRUSTED_PACKAGES,
+                "com.riskplatform.common.event,com.transaction.ingestion.service.model");
         return new DefaultKafkaConsumerFactory<>(props);
     }
 
@@ -111,9 +115,14 @@ public class KafkaConfig {
     public NewTopic transactionRejectedTopic() {
         Map<String, String> configs = new HashMap<>();
         configs.put(TopicConfig.RETENTION_MS_CONFIG, String.valueOf(retentionDays * 24 * 60 * 60 * 1000L));
-        return new NewTopic(transactionRejectedTopic, partitionCount / 2, replicationFactor).configs(configs); // Half the partitions for rejected topic
+        return new NewTopic(transactionRejectedTopic, partitionCount / 2, replicationFactor).configs(configs); // Half
+                                                                                                               // the
+                                                                                                               // partitions
+                                                                                                               // for
+                                                                                                               // rejected
+                                                                                                               // topic
     }
-    
+
     @Bean
     public NewTopic transactionValidationFailedTopic() {
         Map<String, String> configs = new HashMap<>();

@@ -2,7 +2,7 @@ package com.transaction.ingestion.service.service;
 
 import com.riskplatform.common.entity.Transaction;
 import com.riskplatform.common.entity.ValidationDetails;
-import com.transaction.ingestion.service.model.TransactionEvent;
+import com.riskplatform.common.event.TransactionEvent;
 import com.transaction.ingestion.service.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

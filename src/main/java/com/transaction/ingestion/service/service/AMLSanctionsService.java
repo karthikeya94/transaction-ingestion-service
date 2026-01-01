@@ -45,7 +45,8 @@ public class AMLSanctionsService {
             Thread.sleep(50); // Simulate network delay
 
             // More realistic mock implementation based on transaction data
-            if (transaction.getAmount() != null && transaction.getAmount() > 50000) {
+            if (transaction.getAmount() != null
+                    && transaction.getAmount().compareTo(java.math.BigDecimal.valueOf(50000)) > 0) {
                 // High-value transactions have a higher chance of being flagged
                 return Math.random() > 0.3;
             }

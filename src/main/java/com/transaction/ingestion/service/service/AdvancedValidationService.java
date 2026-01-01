@@ -3,7 +3,7 @@ package com.transaction.ingestion.service.service;
 import com.transaction.ingestion.service.config.ValidationProperties;
 import com.transaction.ingestion.service.model.KYCStatus;
 import com.riskplatform.common.entity.Transaction;
-import com.transaction.ingestion.service.model.TransactionEvent;
+import com.riskplatform.common.event.TransactionEvent;
 import com.riskplatform.common.entity.ValidationDetails;
 import com.transaction.ingestion.service.repository.KYCStatusRepository;
 import com.transaction.ingestion.service.repository.TransactionRepository;
@@ -181,12 +181,15 @@ public class AdvancedValidationService {
 
         // Calculate average and standard deviation of recent transaction amounts
         double sum = recentTransactions.stream()
-                .mapToDouble(Transaction::getAmount)
+                .map(Transaction::getAmount)
+                .mapToDouble(java.math.BigDecimal::doubleValue)
                 .sum();
         double average = sum / recentTransactions.size();
 
         double squaredDifferenceSum = recentTransactions.stream()
-                .mapToDouble(t -> Math.pow(t.getAmount() - average, 2))
+                .map(Transaction::getAmount)
+                .mapToDouble(java.math.BigDecimal::doubleValue)
+                .map(amt -> Math.pow(amt - average, 2))
                 .sum();
         double standardDeviation = Math.sqrt(squaredDifferenceSum / recentTransactions.size());
 
@@ -194,7 +197,8 @@ public class AdvancedValidationService {
         // the average
         // This indicates a significant deviation from the customer's normal spending
         // pattern
-        double deviation = Math.abs(transaction.getAmount() - average);
+        double currentAmount = transaction.getAmount() != null ? transaction.getAmount().doubleValue() : 0.0;
+        double deviation = Math.abs(currentAmount - average);
         return deviation > (2 * standardDeviation);
     }
 
@@ -261,15 +265,15 @@ public class AdvancedValidationService {
                 .eventId("evt-" + transaction.getTransactionId() + "-2")
                 .transactionId(transaction.getTransactionId())
                 .customerId(transaction.getCustomerId())
-                .amount(transaction.getAmount())
+                .amount(transaction.getAmount() != null ? transaction.getAmount().doubleValue() : 0.0)
                 .currency(transaction.getCurrency())
                 .merchant(transaction.getMerchant())
                 .merchantCategory(transaction.getMerchantCategory())
                 .timestamp(transaction.getTimestamp())
                 .channel(transaction.getChannel())
-                .device(transaction.getDevice())
+                .device(transaction.getDevice() != null ? transaction.getDevice().getType() : null)
                 .location(transaction.getLocation())
-                .eventType("TransactionValidated")
+                .eventTypeString("TransactionValidated")
                 .eventTimestamp(Instant.now())
                 .correlationId("corr-" + transaction.getTransactionId())
                 .build();
@@ -282,15 +286,15 @@ public class AdvancedValidationService {
                 .eventId("evt-" + transaction.getTransactionId() + "-2")
                 .transactionId(transaction.getTransactionId())
                 .customerId(transaction.getCustomerId())
-                .amount(transaction.getAmount())
+                .amount(transaction.getAmount() != null ? transaction.getAmount().doubleValue() : 0.0)
                 .currency(transaction.getCurrency())
                 .merchant(transaction.getMerchant())
                 .merchantCategory(transaction.getMerchantCategory())
                 .timestamp(transaction.getTimestamp())
                 .channel(transaction.getChannel())
-                .device(transaction.getDevice())
+                .device(transaction.getDevice() != null ? transaction.getDevice().getType() : null)
                 .location(transaction.getLocation())
-                .eventType("TransactionValidationFailed")
+                .eventTypeString("TransactionValidationFailed")
                 .eventTimestamp(Instant.now())
                 .correlationId("corr-" + transaction.getTransactionId())
                 .rejectionReason(String.join(",", riskFlags))

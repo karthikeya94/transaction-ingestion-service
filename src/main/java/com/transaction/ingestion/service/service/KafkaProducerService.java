@@ -1,6 +1,6 @@
 package com.transaction.ingestion.service.service;
 
-import com.transaction.ingestion.service.model.TransactionEvent;
+import com.riskplatform.common.event.TransactionEvent;
 import com.transaction.ingestion.service.dto.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
