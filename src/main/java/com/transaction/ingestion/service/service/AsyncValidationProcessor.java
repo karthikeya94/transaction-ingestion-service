@@ -2,7 +2,7 @@ package com.transaction.ingestion.service.service;
 
 import com.riskplatform.common.entity.Transaction;
 import com.riskplatform.common.entity.ValidationDetails;
-import com.riskplatform.common.event.TransactionEvent;
+import com.riskplatform.common.event.TransactionValidatedEvent;
 import com.transaction.ingestion.service.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ public class AsyncValidationProcessor {
     private final AdvancedValidationService advancedValidationService;
 
     @KafkaListener(topics = "${kafka.topics.transaction-received}", groupId = "async-validation-group")
-    public void processTransactionReceivedEvent(TransactionEvent event) {
+    public void processTransactionReceivedEvent(TransactionValidatedEvent event) {
         try {
             log.info("Processing transaction received event for transaction ID: {}", event.getTransactionId());
 
@@ -40,7 +40,7 @@ public class AsyncValidationProcessor {
         }
     }
 
-    private Transaction buildTransactionFromEvent(TransactionEvent event) {
+    private Transaction buildTransactionFromEvent(TransactionValidatedEvent event) {
         return transactionRepository.findByTransactionId(event.getTransactionId()).get();
     }
 }

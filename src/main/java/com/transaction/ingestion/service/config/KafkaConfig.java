@@ -1,7 +1,6 @@
 package com.transaction.ingestion.service.config;
 
-import com.riskplatform.common.event.TransactionEvent;
-import com.transaction.ingestion.service.dto.*;
+import com.riskplatform.common.event.TransactionValidatedEvent;
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -47,7 +46,7 @@ public class KafkaConfig {
 
     // Producer Configuration
     @Bean
-    public ProducerFactory<String, TransactionEvent> producerFactory() {
+    public ProducerFactory<String, TransactionValidatedEvent> producerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
@@ -62,13 +61,13 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, TransactionEvent> kafkaTemplate() {
+    public KafkaTemplate<String, TransactionValidatedEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
     // Consumer Configuration
     @Bean
-    public ConsumerFactory<String, TransactionEvent> consumerFactory() {
+    public ConsumerFactory<String, TransactionValidatedEvent> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "transaction-ingestion-group");
@@ -83,8 +82,8 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, TransactionEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, TransactionEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, TransactionValidatedEvent> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, TransactionValidatedEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }

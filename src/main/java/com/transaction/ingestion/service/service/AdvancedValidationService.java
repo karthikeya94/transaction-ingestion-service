@@ -1,9 +1,9 @@
 package com.transaction.ingestion.service.service;
 
+import com.riskplatform.common.event.TransactionValidatedEvent;
 import com.transaction.ingestion.service.config.ValidationProperties;
 import com.transaction.ingestion.service.model.KYCStatus;
 import com.riskplatform.common.entity.Transaction;
-import com.riskplatform.common.event.TransactionEvent;
 import com.riskplatform.common.entity.ValidationDetails;
 import com.transaction.ingestion.service.repository.KYCStatusRepository;
 import com.transaction.ingestion.service.repository.TransactionRepository;
@@ -261,7 +261,7 @@ public class AdvancedValidationService {
     }
 
     private void publishTransactionValidatedEvent(Transaction transaction) {
-        TransactionEvent event = TransactionEvent.builder()
+        TransactionValidatedEvent event = TransactionValidatedEvent.builder()
                 .eventId("evt-" + transaction.getTransactionId() + "-2")
                 .transactionId(transaction.getTransactionId())
                 .customerId(transaction.getCustomerId())
@@ -271,9 +271,9 @@ public class AdvancedValidationService {
                 .merchantCategory(transaction.getMerchantCategory())
                 .timestamp(transaction.getTimestamp())
                 .channel(transaction.getChannel())
-                .device(transaction.getDevice() != null ? transaction.getDevice().getType() : null)
+                .device(transaction.getDevice() != null ? transaction.getDevice() : null)
                 .location(transaction.getLocation())
-                .eventTypeString("TransactionValidated")
+                .eventType("TransactionValidated")
                 .eventTimestamp(Instant.now())
                 .correlationId("corr-" + transaction.getTransactionId())
                 .build();
@@ -282,7 +282,7 @@ public class AdvancedValidationService {
     }
 
     private void publishTransactionValidationFailedEvent(Transaction transaction, List<String> riskFlags) {
-        TransactionEvent event = TransactionEvent.builder()
+        TransactionValidatedEvent event = TransactionValidatedEvent.builder()
                 .eventId("evt-" + transaction.getTransactionId() + "-2")
                 .transactionId(transaction.getTransactionId())
                 .customerId(transaction.getCustomerId())
@@ -292,9 +292,9 @@ public class AdvancedValidationService {
                 .merchantCategory(transaction.getMerchantCategory())
                 .timestamp(transaction.getTimestamp())
                 .channel(transaction.getChannel())
-                .device(transaction.getDevice() != null ? transaction.getDevice().getType() : null)
+                .device(transaction.getDevice() != null ? transaction.getDevice() : null)
                 .location(transaction.getLocation())
-                .eventTypeString("TransactionValidationFailed")
+                .eventType("TransactionValidationFailed")
                 .eventTimestamp(Instant.now())
                 .correlationId("corr-" + transaction.getTransactionId())
                 .rejectionReason(String.join(",", riskFlags))

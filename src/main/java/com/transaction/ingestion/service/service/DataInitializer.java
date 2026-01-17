@@ -81,11 +81,7 @@ public class DataInitializer {
                 transaction.setMerchantCategory(merchantCategory);
                 transaction.setTimestamp(timestamp);
                 transaction.setChannel(channel);
-                transaction.setDevice(com.riskplatform.common.model.DeviceInfo.builder()
-                                .type(device)
-                                .deviceId("dev-" + System.currentTimeMillis()) // Generate a dummy ID
-                                .isNewDevice(false)
-                                .build());
+                transaction.setDevice(device);
                 transaction.setLocation(location);
                 transaction.setStatus(status);
                 transaction.setCreatedAt(createdAt);

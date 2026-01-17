@@ -1,6 +1,7 @@
 package com.transaction.ingestion.service.service;
 
 import com.riskplatform.common.event.TransactionEvent;
+import com.riskplatform.common.event.TransactionValidatedEvent;
 import com.transaction.ingestion.service.dto.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,9 +13,9 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class KafkaProducerService {
 
-    private final KafkaTemplate<String, TransactionEvent> kafkaTemplate;
+    private final KafkaTemplate<String, TransactionValidatedEvent> kafkaTemplate;
 
-    public void sendMessage(String topic, TransactionEvent message) {
+    public void sendMessage(String topic, TransactionValidatedEvent message) {
         try {
             kafkaTemplate.send(topic, message.getCustomerId(), message);
             log.info("Message sent to topic {}: {}", topic, message);

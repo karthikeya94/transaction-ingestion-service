@@ -1,5 +1,6 @@
 package com.transaction.ingestion.service.service;
 
+import com.riskplatform.common.event.TransactionValidatedEvent;
 import com.transaction.ingestion.service.config.ValidationProperties;
 import com.riskplatform.common.entity.Customer;
 import com.riskplatform.common.entity.RejectedTransaction;
@@ -207,11 +208,7 @@ public class TransactionService {
                 .merchantCategory(ingestRequest.getMerchantCategory())
                 .timestamp(ingestRequest.getTimestamp())
                 .channel(ingestRequest.getChannel())
-                .device(com.riskplatform.common.model.DeviceInfo.builder()
-                        .type(ingestRequest.getDevice())
-                        .deviceId(UUID.randomUUID().toString())
-                        .isNewDevice(true)
-                        .build())
+                .device(ingestRequest.getDevice())
                 .location(ingestRequest.getLocation())
                 .status("RECEIVED")
                 .createdAt(Instant.now())
@@ -220,7 +217,7 @@ public class TransactionService {
     }
 
     private void publishTransactionReceivedEvent(Transaction transaction) {
-        TransactionEvent event = TransactionEvent.builder()
+        TransactionValidatedEvent event = TransactionValidatedEvent.builder()
                 .eventId(transaction.getId())
                 .transactionId(transaction.getTransactionId())
                 .customerId(transaction.getCustomerId())
@@ -229,8 +226,8 @@ public class TransactionService {
                 .merchant(transaction.getMerchant())
                 .timestamp(transaction.getTimestamp())
                 .channel(transaction.getChannel())
-                .device(transaction.getDevice() != null ? transaction.getDevice().getType() : null)
-                .eventTypeString("TransactionReceived")
+                .device(transaction.getDevice() != null ? transaction.getDevice() : null)
+                .eventType("TransactionReceived")
                 .eventTimestamp(Instant.now())
                 .correlationId("corr-" + transaction.getTransactionId())
                 .build();
@@ -251,7 +248,7 @@ public class TransactionService {
 
         String transactionId = "T" + System.currentTimeMillis() + UUID.randomUUID().toString().substring(0, 8);
 
-        TransactionEvent event = TransactionEvent.builder()
+        TransactionValidatedEvent event = TransactionValidatedEvent.builder()
                 .eventId("evt-" + transactionId + "-1")
                 .transactionId(transactionId)
                 .customerId(request.getCustomerId())
@@ -261,7 +258,7 @@ public class TransactionService {
                 .timestamp(request.getTimestamp())
                 .channel(request.getChannel())
                 .device(request.getDevice())
-                .eventTypeString("TransactionRejected")
+                .eventType("TransactionRejected")
                 .eventTimestamp(Instant.now())
                 .correlationId("corr-" + transactionId)
                 .rejectionReason(reason)
