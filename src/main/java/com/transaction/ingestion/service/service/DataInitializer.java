@@ -3,9 +3,7 @@ package com.transaction.ingestion.service.service;
 import com.riskplatform.common.entity.Customer;
 import com.riskplatform.common.entity.Transaction;
 import com.riskplatform.common.model.Location;
-import com.transaction.ingestion.service.config.DataInitializationConfig;
-import com.transaction.ingestion.service.repository.CustomerRepository;
-import com.transaction.ingestion.service.repository.TransactionRepository;
+import com.transaction.ingestion.service.client.MongoServiceClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -17,13 +15,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
-//@Component
+//@Component - Disabled: Demo data initializer (uncomment to enable)
 @RequiredArgsConstructor
 @Slf4j
 public class DataInitializer {
 
-        private final CustomerRepository customerRepository;
-        private final TransactionRepository transactionRepository;
+        private final MongoServiceClient mongoServiceClient;
         // private final DataInitializationConfig config;
 
         // @Override
@@ -41,12 +38,16 @@ public class DataInitializer {
 
                 // Create dummy customers
                 List<Customer> customers = createDummyCustomers();
-                customerRepository.saveAll(customers);
+                for (Customer customer : customers) {
+                    mongoServiceClient.saveCustomer(customer);
+                }
                 log.info("Created {} dummy customers", customers.size());
 
                 // Create dummy transactions
                 List<Transaction> transactions = createDummyTransactions(customers);
-                transactionRepository.saveAll(transactions);
+                for (Transaction transaction : transactions) {
+                    mongoServiceClient.saveTransaction(transaction);
+                }
                 log.info("Created {} dummy transactions", transactions.size());
 
                 log.info("Dummy data initialization completed.");

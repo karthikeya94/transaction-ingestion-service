@@ -1,6 +1,7 @@
 package com.transaction.ingestion.service.service;
 
 import com.riskplatform.common.event.TransactionValidatedEvent;
+import com.transaction.ingestion.service.client.MongoServiceClient;
 import com.transaction.ingestion.service.config.ValidationProperties;
 import com.riskplatform.common.entity.Customer;
 import com.riskplatform.common.entity.RejectedTransaction;
@@ -9,9 +10,6 @@ import com.riskplatform.common.entity.Transaction;
 import com.riskplatform.common.event.TransactionEvent;
 import com.riskplatform.common.event.RejectionDetails;
 import com.transaction.ingestion.service.dto.*;
-import com.transaction.ingestion.service.repository.CustomerRepository;
-import com.transaction.ingestion.service.repository.RejectedTransactionRepository;
-import com.transaction.ingestion.service.repository.TransactionRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -29,12 +27,10 @@ import static com.transaction.ingestion.service.constant.Constant.*;
 @Slf4j
 public class TransactionService {
 
-    private final TransactionRepository transactionRepository;
-    private final RejectedTransactionRepository rejectedTransactionRepository;
     private final CustomerService customerService;
     private final KafkaProducerService kafkaProducerService;
     private final ValidationProperties validationProperties;
-    private final CustomerRepository customerRepository;
+    private final MongoServiceClient mongoServiceClient;
 
     public ResponseEntity<?> processTransaction(IngestRequest ingestRequest) {
         List<ErrorResponse.Violation> violations = validateStructural(ingestRequest);
@@ -60,7 +56,7 @@ public class TransactionService {
 
         Transaction transaction = buildTransaction(ingestRequest, transactionId);
 
-        Transaction save = transactionRepository.save(transaction);
+        Transaction save = mongoServiceClient.saveTransaction(transaction);
 
         publishTransactionReceivedEvent(save);
 
@@ -74,7 +70,7 @@ public class TransactionService {
     }
 
     public ResponseEntity<Transaction> findTransactionById(String transactionId) {
-        Optional<Transaction> transaction = transactionRepository.findByTransactionId(transactionId);
+        Optional<Transaction> transaction = mongoServiceClient.findTransactionById(transactionId);
         return transaction.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
@@ -124,7 +120,7 @@ public class TransactionService {
     }
 
     private ResponseEntity<?> validateBusinessRules(IngestRequest request) {
-        Customer customer = customerRepository.findByCustomerId(request.getCustomerId());
+        Customer customer = mongoServiceClient.findCustomerByCustomerId(request.getCustomerId()).orElse(null);
         if (!customerService.isCustomerActive(customer)) {
             return buildRejectedResponse("CUSTOMER_INACTIVE", "Customer is not active", request);
         }
@@ -332,7 +328,7 @@ public class TransactionService {
             rejectionDetails.setCustomerLimit(customerLimit);
             rejectedTransaction.setRejectionDetails(rejectionDetails);
 
-            rejectedTransactionRepository.save(rejectedTransaction);
+            mongoServiceClient.saveRejectedTransaction(rejectedTransaction);
             log.info("Saved rejected transaction {} to audit trail", rejectedTransaction.getTransactionId());
         } catch (Exception e) {
             log.error("Error saving rejected transaction to audit trail: {}", e.getMessage(), e);

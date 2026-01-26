@@ -2,10 +2,6 @@ spring:
   application:
     name: transaction-ingestion-service
 
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017/yourdatabase
-      database: sample_mflix
   kafka:
     bootstrap-servers: localhost:9092
     producer:

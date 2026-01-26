@@ -5,8 +5,7 @@ import com.transaction.ingestion.service.config.ValidationProperties;
 import com.transaction.ingestion.service.model.KYCStatus;
 import com.riskplatform.common.entity.Transaction;
 import com.riskplatform.common.entity.ValidationDetails;
-import com.transaction.ingestion.service.repository.KYCStatusRepository;
-import com.transaction.ingestion.service.repository.TransactionRepository;
+import com.transaction.ingestion.service.client.MongoServiceClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class AdvancedValidationService {
 
-    private final KYCStatusRepository kycStatusRepository;
-    private final TransactionRepository transactionRepository;
+    private final MongoServiceClient mongoServiceClient;
     private final KafkaProducerService kafkaProducerService;
     private final ValidationProperties validationProperties;
 
@@ -74,7 +72,7 @@ public class AdvancedValidationService {
 
     private String checkKYCStatus(String customerId) {
         try {
-            KYCStatus kycStatus = kycStatusRepository.findByCustomerId(customerId);
+            com.riskplatform.common.entity.KYCStatus kycStatus = mongoServiceClient.findKYCStatusByCustomerId(customerId);
             if (kycStatus == null) {
                 return "NOT_FOUND";
             }
@@ -101,8 +99,8 @@ public class AdvancedValidationService {
 
             // Get recent transactions for pattern analysis (last 30 days)
             Instant thirtyDaysAgo = now.minusSeconds(30 * 24 * 60 * 60L);
-            List<Transaction> recentTransactions = transactionRepository
-                    .findByCustomerIdAndTimestampAfterOrderByTimestampDesc(
+            List<Transaction> recentTransactions = mongoServiceClient
+                    .findTransactionsByCustomerIdAndTimestampAfterOrderByTimestampDesc(
                             customerId, thirtyDaysAgo);
 
             // If this is the first transaction, no pattern deviation

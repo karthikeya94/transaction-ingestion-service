@@ -3,7 +3,7 @@ package com.transaction.ingestion.service.service;
 import com.riskplatform.common.entity.Transaction;
 import com.riskplatform.common.entity.ValidationDetails;
 import com.riskplatform.common.event.TransactionValidatedEvent;
-import com.transaction.ingestion.service.repository.TransactionRepository;
+import com.transaction.ingestion.service.client.MongoServiceClient;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -16,7 +16,7 @@ import java.time.Instant;
 @Slf4j
 public class AsyncValidationProcessor {
 
-    private final TransactionRepository transactionRepository;
+    private final MongoServiceClient mongoServiceClient;
     private final AdvancedValidationService advancedValidationService;
 
     @KafkaListener(topics = "${kafka.topics.transaction-received}", groupId = "async-validation-group")
@@ -31,7 +31,7 @@ public class AsyncValidationProcessor {
                     event.getTransactionId(), transaction.getRiskFlags(), validationDetails);
 
             transaction.setUpdatedAt(Instant.now());
-            transactionRepository.save(transaction);
+            mongoServiceClient.saveTransaction(transaction);
 
             log.info("Completed async validation for transaction ID: {}", event.getTransactionId());
         } catch (Exception e) {
@@ -41,6 +41,7 @@ public class AsyncValidationProcessor {
     }
 
     private Transaction buildTransactionFromEvent(TransactionValidatedEvent event) {
-        return transactionRepository.findByTransactionId(event.getTransactionId()).get();
+        return mongoServiceClient.findTransactionById(event.getTransactionId())
+                .orElseThrow(() -> new RuntimeException("Transaction not found: " + event.getTransactionId()));
     }
 }
